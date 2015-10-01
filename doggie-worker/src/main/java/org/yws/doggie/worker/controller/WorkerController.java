@@ -8,9 +8,9 @@ import org.yws.doggie.worker.JobInfoResponse;
 
 @RestController
 @RequestMapping("/")
-public class HelloController {
+public class WorkerController {
 
-	@RequestMapping("/hello")
+	@RequestMapping("/job_receiver")
 	public JobInfoResponse home(@RequestBody JobInfoRequest jobInfo) {
 		System.out.println(jobInfo.getScript());
 		return new JobInfoResponse(true,"123");

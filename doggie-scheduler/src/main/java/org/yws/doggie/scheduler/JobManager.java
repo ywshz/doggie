@@ -1,37 +1,29 @@
 package org.yws.doggie.scheduler;
 
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.yws.doggie.scheduler.models.*;
+import org.yws.doggie.scheduler.service.JobService;
+
+import javax.annotation.PostConstruct;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
-import javax.annotation.PostConstruct;
-
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
-import org.quartz.Trigger;
-import org.quartz.impl.StdSchedulerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.yws.doggie.scheduler.models.JobEntity;
-import org.yws.doggie.scheduler.models.JobHistoryEntity;
-import org.yws.doggie.scheduler.models.JobRunResult;
-import org.yws.doggie.scheduler.models.ScheduleType;
-import org.yws.doggie.scheduler.models.TriggerType;
-import org.yws.doggie.scheduler.service.JobService;
-
 @Service
 public class JobManager {
 	private static final String TRIGGER_OF_JOB = "trigger_of_job_";
 	private Scheduler scheduler;
-	
+	private Lock runningJobsLock = new ReentrantLock();
+	private List<JobHistoryEntity> runningJobs = new LinkedList<JobHistoryEntity>();
 	@Autowired
 	private JobService jobService;
 	private final Trigger RUN_NOW_TRIGGER = newTrigger()
@@ -49,7 +41,16 @@ public class JobManager {
 	}
 
 	private void initMonitorOfJobTimeout() {
-		// TODO Auto-generated method stub
+		runningJobsLock.lock();
+		try{
+			List<JobHistoryEntity> cpy = new ArrayList<JobHistoryEntity>(runningJobs.size());
+			Collections.copy(cpy,runningJobs);
+		}finally {
+			runningJobsLock.unlock();
+		}
+
+		// TODO 遍历CPY寻找过期的，然后去数据库比对
+
 		
 	}
 
@@ -117,16 +118,38 @@ public class JobManager {
 		jobService.saveLog(historyEntity);
 	}
 
-	public void setJobSucceed() {
-
+	public void setJobSucceed(JobHistoryEntity historyEntity) {
+		historyEntity.setEndTime(new Timestamp(new Date().getTime()));
+		historyEntity.setResult(JobRunResult.SUCCESS);
+		jobService.saveLog(historyEntity);
 	}
 
-	public void getRunningJobLog() {
-
+	public String getRunningJobLog(Long id) {
+		return null;
 	}
 
-	public void killJob() {
+	public void addToRunningList(JobHistoryEntity log){
+		runningJobsLock.lock();
+		try{
+			runningJobs.add(log);
+		}finally {
+			runningJobsLock.unlock();
+		}
+	}
 
+	public void removeFromRunningList(JobHistoryEntity log){
+		runningJobsLock.lock();
+		try{
+			runningJobs.remove(log);
+		}finally {
+			runningJobsLock.unlock();
+		}
+	}
+
+	public void killJob(JobHistoryEntity log) {
+		log.getExecutionMachine();
+		log.getId();
+		//doKill
 	}
 
 }

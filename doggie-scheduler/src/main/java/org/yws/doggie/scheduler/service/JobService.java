@@ -1,11 +1,5 @@
 package org.yws.doggie.scheduler.service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +10,11 @@ import org.yws.doggie.scheduler.models.JobHistoryEntity;
 import org.yws.doggie.scheduler.repositories.FileRepository;
 import org.yws.doggie.scheduler.repositories.JobHistoryRepository;
 import org.yws.doggie.scheduler.repositories.JobRepository;
+
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by ywszjut on 15/7/27.
@@ -47,6 +46,7 @@ public class JobService {
     	while(ite.hasNext()){
     		jobList.add(ite.next());
     	}
+
         return jobList;
     }
 
