@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="doggie-web:war">
+    <output-path>$PROJECT_DIR$/doggie-web/target</output-path>
+    <root id="archive" name="doggie-web-1.0-SNAPSHOT.war">
+      <element id="artifact" artifact-name="doggie-web:war exploded" />
+    </root>
+  </artifact>
+</component>
