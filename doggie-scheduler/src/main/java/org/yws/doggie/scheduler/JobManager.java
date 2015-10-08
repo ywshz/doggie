@@ -144,6 +144,8 @@ public class JobManager {
 		}finally {
 			runningJobsLock.unlock();
 		}
+        log.setEndTime(new Timestamp(new Date().getTime()));
+        jobService.saveLog(log);
 	}
 
 	public void killJob(JobHistoryEntity log) {

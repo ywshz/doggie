@@ -66,8 +66,8 @@ CREATE TABLE `job` (
 -- ----------------------------
 INSERT INTO `job` VALUES ('2', null, '0 0 0 * * ?', '', '1', 'ggggg', null, '0', '请编辑修改ff', '14', '0', '12345');
 INSERT INTO `job` VALUES ('4', null, '0 0 0 * * ?', '', '0', 'ttt', '1', '0', '请编辑修改', '16', '0', '');
-INSERT INTO `job` VALUES ('5', null, '*/10 * * * * ?', '', '0', 'hhhh', '1', '0', '10s job', '16', '0', '');
-INSERT INTO `job` VALUES ('6', null, '*/5 * * * * ?', '', '0', 'ggggg', '1', '0', '5s job', '16', '0', '');
+INSERT INTO `job` VALUES ('5', null, '*/10 * * * * ?', '', '0', 'dir', '0', '0', 'dir', '16', '0', '');
+INSERT INTO `job` VALUES ('6', null, '*/5 * * * * ?', '', '0', 'ifconfig', '0', '0', 'ifconfig', '16', '0', '');
 
 -- ----------------------------
 -- Table structure for job_history
@@ -75,7 +75,7 @@ INSERT INTO `job` VALUES ('6', null, '*/5 * * * * ?', '', '0', 'ggggg', '1', '0'
 DROP TABLE IF EXISTS `job_history`;
 CREATE TABLE `job_history` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `content` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `content` text COLLATE utf8_bin,
   `end_time` datetime DEFAULT NULL,
   `result` smallint(6) DEFAULT NULL,
   `start_time` datetime DEFAULT NULL,

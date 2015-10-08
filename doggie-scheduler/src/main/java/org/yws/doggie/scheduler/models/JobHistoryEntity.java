@@ -113,12 +113,6 @@ public class JobHistoryEntity {
         JobHistoryEntity that = (JobHistoryEntity) o;
 
         if (id != that.id) return false;
-        if (result != that.result) return false;
-        if (triggerType != that.triggerType) return false;
-        if (content != null ? !content.equals(that.content) : that.content != null) return false;
-        if (endTime != null ? !endTime.equals(that.endTime) : that.endTime != null) return false;
-        if (startTime != null ? !startTime.equals(that.startTime) : that.startTime != null) return false;
-
         return true;
     }
 

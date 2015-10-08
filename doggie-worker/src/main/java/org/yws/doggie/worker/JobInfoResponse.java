@@ -1,6 +1,7 @@
 package org.yws.doggie.worker;
 
 public class JobInfoResponse {
+    private Long historyId;
 	private boolean succeed;
 	private String message;
 
@@ -13,7 +14,15 @@ public class JobInfoResponse {
 		this.message=message;
 	}
 
-	public boolean isSucceed() {
+    public Long getHistoryId() {
+        return historyId;
+    }
+
+    public void setHistoryId(Long historyId) {
+        this.historyId = historyId;
+    }
+
+    public boolean isSucceed() {
 		return succeed;
 	}
 

@@ -10,17 +10,19 @@ public class JobInfoRequest implements Serializable {
 	private Long id;
 	private Long historyId;
 	private String type;
+	private String filePostfix;
 	private String script;
 
 	public JobInfoRequest() {
 
 	}
 
-	public JobInfoRequest(Long id, Long historyId, String type, String script) {
+	public JobInfoRequest(Long id, Long historyId, String type,String filePostfix,String script) {
 		super();
 		this.id = id;
 		this.historyId = historyId;
 		this.type = type;
+        this.filePostfix=filePostfix;
 		this.script = script;
 	}
 
@@ -56,4 +58,11 @@ public class JobInfoRequest implements Serializable {
 		this.historyId = historyId;
 	}
 
+    public String getFilePostfix() {
+        return filePostfix;
+    }
+
+    public void setFilePostfix(String filePostfix) {
+        this.filePostfix = filePostfix;
+    }
 }

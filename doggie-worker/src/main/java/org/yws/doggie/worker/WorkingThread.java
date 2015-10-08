@@ -48,27 +48,26 @@ public class WorkingThread implements Runnable {
             bw = new BufferedWriter(fw);
             bw.write("工作目录与日志文件创建完毕，他们位于" + absPath);
             bw.newLine();
-            File file = writeScriptToFile(absPath, job.getScript());
+            File file = writeScriptToFile(absPath, job.getScript(), job.getFilePostfix());
             bw.write("生成脚本文件，然后开始执行：");
             int exitCode = executeScript(absPath, job.getType(), file, bw);
             if (exitCode == 0) {
-                //TODO SUCCESS
                 bw.write("任务完成，运行结果是：成功");
                 bw.close();
-                responseJob(SUCCESS, logFile, null);
+                responseJob(job.getHistoryId(), SUCCESS, logFile, null);
             } else {
                 bw.write("任务完成，运行结果是：失败");
                 bw.close();
-                responseJob(FAILED, logFile, null);
+                responseJob(job.getHistoryId(), FAILED, logFile, null);
             }
         } catch (Exception e) {
             //任务异常中断，原因是。。。
-            responseJob(FAILED, logFile, "任务异常中断，原因是" + e.getMessage());
+            responseJob(job.getHistoryId(), EXCEPTION, logFile, "任务异常中断，原因是" + e.getMessage());
         }
 
     }
 
-    private void responseJob(int status, File logFile, String appendLog) {
+    private void responseJob(Long historyId, int status, File logFile, String appendLog) {
         try {
             InputStream in = new FileInputStream(logFile);
             byte[] data = new byte[in.available()];
@@ -77,27 +76,34 @@ public class WorkingThread implements Runnable {
 
             String log = new String(data);
             JobInfoResponse res = new JobInfoResponse();
+            res.setHistoryId(historyId);
+            res.setMessage(log);
 
             if (SUCCESS == status) {
                 res.setSucceed(true);
-            } else {
+            } else if (FAILED == status) {
                 res.setSucceed(false);
-            }
-            res.setMessage(log);
-            if (EXCEPTION == status) {
+            } else if (EXCEPTION == status) {
                 res.setMessage(res.getMessage() + "\n" + appendLog);
             }
 
             restTemplate.postForObject(responseUrl, res, Boolean.class);
         } catch (Exception e) {
+            //加入到失败反馈队列,定时重试
             e.printStackTrace();
         }
 
     }
 
-    private int executeScript(String absPath, String type, File file, final BufferedWriter bw) throws IOException, InterruptedException {
-        ProcessBuilder builder = new ProcessBuilder(type,
-                file.getAbsolutePath());
+    private int executeScript(String absPath, String type, File script, final BufferedWriter bw) throws IOException, InterruptedException {
+        ProcessBuilder builder = null;
+        if ("".equals(type)) {
+            builder = new ProcessBuilder(script.getAbsolutePath());
+        } else {
+            builder = new ProcessBuilder(type,
+                    script.getAbsolutePath());
+        }
+
         builder.directory(new File(absPath));
         Process process = builder.start();
 
@@ -159,10 +165,10 @@ public class WorkingThread implements Runnable {
         return exitCode;
     }
 
-    private File writeScriptToFile(String absPath, String script) throws IOException {
+    private File writeScriptToFile(String absPath, String script, String filePostfix) throws IOException {
         File file = null;
         script = DateRender.render(script);
-        file = new File(absPath + File.separator + UUID.randomUUID().toString() + ".hive");
+        file = new File(absPath + File.separator + UUID.randomUUID().toString() + filePostfix);
         file.createNewFile();
         file.setExecutable(true);
         file.setReadable(true);

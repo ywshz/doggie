@@ -54,6 +54,10 @@ public class JobService {
         return jobHistoryRepository.findByJob(new JobEntity(jobId));
     }
 
+    public JobHistoryEntity getJobHistory(Long historyId) {
+        return jobHistoryRepository.findOne(historyId);
+    }
+
     public void saveLog(JobHistoryEntity log){
     	jobHistoryRepository.save(log);
     }
