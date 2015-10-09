@@ -1,16 +1,29 @@
 package org.yws.doggieweb.controllers;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 import org.yws.doggieweb.convert.CaseInsensitiveConverter;
-import org.yws.doggieweb.models.*;
+import org.yws.doggieweb.models.AllocationType;
+import org.yws.doggieweb.models.CommonResponse;
+import org.yws.doggieweb.models.FileType;
+import org.yws.doggieweb.models.JobEntity;
+import org.yws.doggieweb.models.JobHistoryEntity;
+import org.yws.doggieweb.models.JobType;
+import org.yws.doggieweb.models.ScheduleStatus;
+import org.yws.doggieweb.models.ScheduleType;
 import org.yws.doggieweb.service.JobService;
-
-import java.util.List;
 
 /**
  * Created by ywszjut on 15/7/25.
@@ -20,6 +33,10 @@ import java.util.List;
 public class JobController {
     @Autowired
     private JobService jobService;
+
+    @Value("${scheduler.trigger_job.url}")
+    private String scheduler_trigger_job_url;
+    private RestTemplate restTemplate = new RestTemplate();
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -59,17 +76,34 @@ public class JobController {
             jobService.updateJob(job);
             return CommonResponse.SUCCESS();
         } catch (Exception e) {
-            return  CommonResponse.FAILED(e.getMessage());
+            return CommonResponse.FAILED(e.getMessage());
         }
     }
 
     @RequestMapping(value = "delete")
     @ResponseBody
     public CommonResponse delete(Long jobId) {
-        try{
+        try {
             jobService.delete(jobId);
             return CommonResponse.SUCCESS();
-        }catch(Exception e){
+        } catch (Exception e) {
+            return CommonResponse.FAILED(e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "trigger_job")
+    @ResponseBody
+    public CommonResponse trigger_job(@RequestParam(required=true) Long jobId) {
+        try {
+        	MultiValueMap<String, Long> params = new LinkedMultiValueMap<String, Long>();
+        	params.add("jobId", jobId);
+            Map<String,Object> rs = restTemplate.postForObject(scheduler_trigger_job_url, params, Map.class);
+            if((Boolean)rs.get("op_result")==true){
+                return CommonResponse.SUCCESS((String)rs.get("job_status"));
+            }else{
+                return CommonResponse.FAILED((String)rs.get("job_status"));
+            }
+        } catch (Exception e) {
             return CommonResponse.FAILED(e.getMessage());
         }
     }

@@ -36,8 +36,7 @@ CREATE TABLE `file` (
 -- ----------------------------
 INSERT INTO `file` VALUES ('1', null, '调度系统', '2015-07-27 21:50:16', '2015-07-27 21:50:16', '1');
 INSERT INTO `file` VALUES ('13', '1', '新文件夹', '2015-07-29 18:02:47', null, '1');
-INSERT INTO `file` VALUES ('14', '1', 'ggggg', '2015-07-29 18:02:50', null, '0');
-INSERT INTO `file` VALUES ('16', '1', 'ttt', '2015-07-30 15:50:41', null, '0');
+INSERT INTO `file` VALUES ('17', '1', 'Shell', '2015-10-09 16:10:16', null, '0');
 
 -- ----------------------------
 -- Table structure for job
@@ -64,18 +63,15 @@ CREATE TABLE `job` (
 -- ----------------------------
 -- Records of job
 -- ----------------------------
-INSERT INTO `job` VALUES ('2', null, '0 0 0 * * ?', '', '1', 'ggggg', null, '0', '请编辑修改ff', '14', '0', '12345');
-INSERT INTO `job` VALUES ('4', null, '0 0 0 * * ?', '', '0', 'ttt', '1', '0', '请编辑修改', '16', '0', '');
-INSERT INTO `job` VALUES ('5', null, '*/10 * * * * ?', '', '0', 'hhhh', '1', '0', '10s job', '16', '0', '');
-INSERT INTO `job` VALUES ('6', null, '*/5 * * * * ?', '', '0', 'ggggg', '1', '0', '5s job', '16', '0', '');
+INSERT INTO `job` VALUES ('7', null, '*/5 * * * * ?', '', '0', 'Shell', '1', '0', 'dir', '17', '0', '');
 
 -- ----------------------------
 -- Table structure for job_history
 -- ----------------------------
 DROP TABLE IF EXISTS `job_history`;
 CREATE TABLE `job_history` (
-  `id` bigint(20) NOT NULL,
-  `content` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `content` text COLLATE utf8_bin,
   `end_time` datetime DEFAULT NULL,
   `result` smallint(6) DEFAULT NULL,
   `start_time` datetime DEFAULT NULL,
@@ -108,3 +104,5 @@ CREATE TABLE `workers` (
 -- Records of workers
 -- ----------------------------
 INSERT INTO `workers` VALUES ('1', 'http://127.0.0.1:8082', '本地测试', '2015-09-29 17:43:55');
+
+

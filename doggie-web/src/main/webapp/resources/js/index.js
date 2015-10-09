@@ -112,16 +112,16 @@
                 var org = $("#open-close-btn").html();
                 $("#open-close-btn").attr("disabled", "disabled");
                 $("#open-close-btn").html("处理中...");
-                $.post(BASE_PATH + "/jobs/openclosejob.do", {id: $("#viewing-job-input").val()}, function (res) {
+                $.post(BASE_PATH + "/job/trigger_job.do", { 'jobId' : $("#viewing-job-input").val()}, function (res) {
                     $("#open-close-btn").removeAttr("disabled", "disabled");
                     $("#open-close-btn").html(org);
-                    if ("opened" == res) {
+                    if ("ON" == res.message) {
                         $("#auto-td").html("开启");
-                        alert("开启成功");
+                        Noty.info("开启成功")
                     }
-                    if ("closed" == res) {
+                    if ("OFF" == res.message) {
                         $("#auto-td").html("关闭");
-                        alert("关闭成功");
+                        Noty.info("关闭成功")
                     }
                 });
             });

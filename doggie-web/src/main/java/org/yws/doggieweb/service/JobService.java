@@ -7,6 +7,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.yws.doggieweb.models.FileEntity;
 import org.yws.doggieweb.models.JobEntity;
@@ -40,7 +41,7 @@ public class JobService {
     }
 
     public List<JobHistoryEntity> getJobHistoryList(Long jobId) {
-        return jobHistoryRepository.findByJob(new JobEntity(jobId));
+        return jobHistoryRepository.findTop10ByJobOrderByStartTimeDesc(new JobEntity(jobId));
     }
 
     public void updateJob(JobEntity modifiedJob) {

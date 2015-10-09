@@ -251,6 +251,8 @@
     </div>
 </div>
 
+<input type="hidden" id="viewing-job-input"/>
+
 <%@include file="common/common_foot.jsp" %>
 <script type="text/javascript" src="${path }/resources/js/jquery.ztree.core-3.5.js"></script>
 <script type="text/javascript" src="${path }/resources/js/jquery.ztree.excheck-3.5.min.js"></script>
