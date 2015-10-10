@@ -22,6 +22,14 @@ public class JobHistoryEntity {
     private TriggerType triggerType;
     private String executionMachine;
 
+    public JobHistoryEntity(){
+    	
+    }
+    
+    public JobHistoryEntity(Long id){
+    	this.id=id;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")

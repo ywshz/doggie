@@ -34,6 +34,7 @@
             }
         },
         treeObject : null,
+        refreshJobLogTimer : undefined,
         initEditor: function () {
             editor = CodeMirror.fromTextArea(document.getElementById("edit-script"), {
                 lineNumbers: true,
@@ -81,13 +82,13 @@
                 var org = $("#manual-run-btn").html();
                 $("#manual-run-btn").attr("disabled", "disabled");
                 setTimeout(function () {
-                    refreshHistoryView($("#viewing-job-input").val());
+                    IndexPage.refreshHistoryView($("#viewing-job-input").val());
                 }, 2000)
-                $.post(BASE_PATH + "/jobs/manualrun.do", {jobId: $("#viewing-job-input").val()}, function (res) {
-                    alert("已进入任务队列");
+                $.post(BASE_PATH + "/job/manualrun.do", {jobId: $("#viewing-job-input").val()}, function (res) {
+                    Noty.info("已进入任务队列");
                     $("#manual-run-btn").removeAttr("disabled");
                     $("#manual-run-btn").html(org);
-                    refreshHistoryView($("#viewing-job-input").val());
+                    IndexPage.refreshHistoryView($("#viewing-job-input").val());
                 });
             });
 
@@ -96,15 +97,15 @@
                 $("#resume-run-btn").attr("disabled", "disabled");
                 $("#resume-run-btn").html("运行中...");
                 setTimeout(function () {
-                    refreshHistoryView($("#viewing-job-input").val());
+                	IndexPage.refreshHistoryView($("#viewing-job-input").val());
                 }, 2000)
-                $.post(BASE_PATH + "/jobs/resumerun.do", {jobId: $("#viewing-job-input").val()}, function (res) {
+                $.post(BASE_PATH + "/job/resumerun.do", {jobId: $("#viewing-job-input").val()}, function (res) {
                     $("#resume-run-btn").removeAttr("disabled");
                     $("#resume-run-btn").html(org);
                     if (res) {
-                        alert("已加入运行队列");
+                    	Noty.info("已加入运行队列");
                     } else {
-                        alert("ERROR:运行失败");
+                    	Noty.error("ERROR:运行失败");
                     }
                 });
             });
@@ -262,24 +263,35 @@
 
                 $.each(data, function (key, his) {
 
-                    var td = "<tr><td>" + his.id + "</td><td>" + his.result + "</td><td>" + BkUtils.formatDate(his.startTime, "yyyy-MM-dd hh:mm:ss") + "</td><td>" + BkUtils.formatDate(his.endTime, "yyyy-MM-dd hh:mm:ss") + "</td><td>" + his.executionMachine + "</td><td>";
-                    td += '<button type="button" class="btn btn-default btn-xs" onclick="viewLog(' + his.id + ')">查看日志</button>';
+                	machine = "";
+                	if(his.executionMachine!=undefined && his.executionMachine!=null){
+                		machine=his.executionMachine;
+                	}
+                    var td = "<tr><td>" + his.id + "</td><td>" + his.result + "</td><td>" + BkUtils.formatDate(his.startTime, "yyyy-MM-dd hh:mm:ss") + "</td><td>" + BkUtils.formatDate(his.endTime, "yyyy-MM-dd hh:mm:ss") + "</td><td>" + machine + "</td><td>";
+                    td += '<button type="button" class="view-log-btn btn btn-default btn-xs" data="' +his.id + '">查看日志</button>';
                     if (his.status == "RUNNING") {
-                        td += ',<button type="button" class="btn btn-primary btn-xs" onclick="killJob(' + his.id + ')">取消任务</button>';
+                        td += ',<button type="button" class="kill-job-btn btn btn-primary btn-xs" data="' +his.id + '">取消任务</button>';
                     }
                     td += "</td></tr>"
                     $("#history-tbody").append(td);
                 });
+                
+                $(".view-log-btn").click(function(){
+                	IndexPage.viewLog($(this).attr("data"));
+                });
+                $(".kill-job-btn").click(function(){
+                	IndexPage.killJob($(this).attr("data"));
+                });
             });
         },
         viewLog: function (historyId) {
-            if (refreshJobLogTimer != undefined) {
-                clearTimeout(refreshJobLogTimer);
+            if (this.refreshJobLogTimer != undefined) {
+                clearTimeout(this.refreshJobLogTimer);
                 $("#log-his-p").html("");
                 document.getElementById('log-div').scrollTop = 0;
             }
 
-            $.post(BASE_PATH + "/jobs/gethistorylog.do", {historyId: historyId}, function (res) {
+            $.post(BASE_PATH + "/job/gethistorylog.do", {historyId: historyId}, function (res) {
                 $("#log-his-p").html("");
                 $("#logModal").modal("show");
 
@@ -290,7 +302,7 @@
                     document.getElementById('log-div').scrollTop = document.getElementById('log-div').scrollHeight;
                 } else {
                     refreshJobLogTimer = setInterval(function () {
-                        $.post(BASE_PATH + "/jobs/gethistorylog.do", {historyId: historyId}, function (res) {
+                        $.post(BASE_PATH + "/job/gethistorylog.do", {historyId: historyId}, function (res) {
                             var cr = $("#log-his-p").html();
                             var nr = res.log.replace(/\n/g, "<br>");
                             if (cr != nr) {
@@ -307,6 +319,30 @@
                 }
 
             });
+        },
+        killJob : function(historyId){
+        	type=$("#job-type-td").text().trim();
+        	if(type=="hive"){
+        		  $.post(BASE_PATH+"/jobs/killhive.do",{historyId:historyId},function(res){
+        			  if(res==1){
+        				  alert("取消成功");
+        			  }else  if(res==2){
+        				  alert("取消失败");
+        			  }else  if(res==3){
+        				  alert("任务已经结束");
+        			  }else  if(res==4){
+        				  alert("请稍后再取消,未能找到任务ID");
+        			  }
+        		  });
+        	}else if(type=="shell"){
+        		 $.post(BASE_PATH+"/jobs/killshell.do",{historyId:historyId},function(res){
+        			 if(res){
+        				  alert("取消成功");
+        			  }else{
+        				  alert("取消失败");
+        			  }
+        		  });
+        	}
         },
         updateJob: function () {
             var param = {};

@@ -1,24 +1,42 @@
 package org.yws.doggie.scheduler;
 
-import org.quartz.*;
-import org.quartz.impl.StdSchedulerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.yws.doggie.scheduler.models.*;
-import org.yws.doggie.scheduler.service.JobService;
-import org.yws.doggie.scheduler.service.MailService;
-
-import javax.annotation.PostConstruct;
-
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.PostConstruct;
+
+import org.quartz.CronTrigger;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerFactory;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.yws.doggie.scheduler.models.JobEntity;
+import org.yws.doggie.scheduler.models.JobHistoryEntity;
+import org.yws.doggie.scheduler.models.JobRunResult;
+import org.yws.doggie.scheduler.models.LogStatus;
+import org.yws.doggie.scheduler.models.ScheduleStatus;
+import org.yws.doggie.scheduler.models.ScheduleType;
+import org.yws.doggie.scheduler.models.TriggerType;
+import org.yws.doggie.scheduler.service.JobService;
+import org.yws.doggie.scheduler.service.MailService;
 
 @Service
 public class JobManager {
@@ -30,12 +48,14 @@ public class JobManager {
 	private List<Long> scheduledJobIds = new LinkedList<Long>();
 	@Autowired
 	private MailService mailService;
+	private Map<Long, String> logHolder = new HashMap<Long, String>();
+
+	private Map<Long, List<Long>> dependencyInfoMap = new HashMap<Long, List<Long>>();
+	private Lock workingDepMapLock = new ReentrantLock();
+	private Map<Long, List<Long>> workingDepMap = new HashMap<Long, List<Long>>();
 
 	@Autowired
 	private JobService jobService;
-	private final Trigger RUN_NOW_TRIGGER = newTrigger()
-			.withIdentity("manual_trigger_run_now").startNow()
-			.withSchedule(simpleSchedule()).build();
 
 	@PostConstruct
 	void init() throws SchedulerException {
@@ -96,12 +116,7 @@ public class JobManager {
 	}
 
 	public void scheduleJob(JobEntity jobEntity) throws SchedulerException {
-		JobDetail jobDetail = newJob(DistributedJob.class).withIdentity(
-				String.valueOf(jobEntity.getId())).build();
-		jobDetail.getJobDataMap().put("JOB_ID", jobEntity.getId());
-		jobDetail.getJobDataMap().put("SCRIPT", jobEntity.getScript());
-		jobDetail.getJobDataMap().put("JOB_TYPE", jobEntity.getJobType());
-		jobDetail.getJobDataMap().put("TRIGGER_TYPE", TriggerType.AUTO);
+		JobDetail jobDetail = initJobDetail(jobEntity);
 
 		if (ScheduleType.CRON == jobEntity.getScheduleType()) {
 			CronTrigger trigger = newTrigger()
@@ -109,7 +124,17 @@ public class JobManager {
 					.withSchedule(cronSchedule(jobEntity.getCron())).build();
 			scheduler.scheduleJob(jobDetail, trigger);
 		} else {
-			scheduler.addJob(jobDetail, true);
+			// dependency
+			String[] dpIds = jobEntity.getDependencies().split(",");
+			dependencyInfoMap.put(jobEntity.getId(), new ArrayList<Long>(
+					dpIds.length));
+			for (String id : dpIds) {
+				dependencyInfoMap.get(jobEntity.getId()).add(
+						jobService.getByFileId(Long.valueOf(id)).getId());
+			}
+			Collections.sort(dependencyInfoMap.get(jobEntity.getId()));
+
+			// scheduler.addJob(jobDetail, true, true);
 		}
 
 		scheduledJobIdsLock.lock();
@@ -123,9 +148,20 @@ public class JobManager {
 		jobService.updateJob(jobEntity);
 	}
 
+	private JobDetail initJobDetail(JobEntity jobEntity) {
+		JobDetail jobDetail = newJob(DistributedJob.class).withIdentity(
+				String.valueOf(jobEntity.getId())).build();
+		jobDetail.getJobDataMap().put("JOB_ID", jobEntity.getId());
+		jobDetail.getJobDataMap().put("SCRIPT", jobEntity.getScript());
+		jobDetail.getJobDataMap().put("JOB_TYPE", jobEntity.getJobType());
+		jobDetail.getJobDataMap().put("TRIGGER_TYPE", TriggerType.AUTO);
+		return jobDetail;
+	}
+
 	public void removeScheduledJob(Long jobId) throws SchedulerException {
 		scheduler.deleteJob(new JobKey(jobId.toString()));
-
+		dependencyInfoMap.remove(jobId);
+		workingDepMap.remove(jobId);
 		scheduledJobIdsLock.lock();
 		try {
 			scheduledJobIds.remove(jobId);
@@ -145,14 +181,11 @@ public class JobManager {
 	 *            这个job必须是已经存在于quartz中
 	 * @throws SchedulerException
 	 */
-	public boolean resumeJob(Long jobId) throws SchedulerException {
-		JobKey key = new JobKey(String.valueOf(jobId));
-		if (scheduler.checkExists(key)) {
-			scheduler.triggerJob(key);
-			return true;
-		} else {
-			return false;
-		}
+	public void resumeJob(Long jobId) throws SchedulerException {
+		JobEntity jobEntity = jobService.getByJobId(jobId);
+		JobDetail jobDetail = initJobDetail(jobEntity);
+		scheduler.addJob(jobDetail, true, true);
+		scheduler.triggerJob(jobDetail.getKey());
 	}
 
 	public void manualJob(Long jobId) throws SchedulerException {
@@ -165,7 +198,11 @@ public class JobManager {
 		jobDetail.getJobDataMap().put("JOB_TYPE", jobEntity.getJobType());
 		jobDetail.getJobDataMap().put("TRIGGER_TYPE", TriggerType.MANUAL);
 
-		scheduler.scheduleJob(jobDetail, RUN_NOW_TRIGGER);
+		Trigger runNowTrigger = newTrigger()
+				.withIdentity("manual_trigger_run_now_job_" + jobId).startNow()
+				.withSchedule(simpleSchedule()).build();
+
+		scheduler.scheduleJob(jobDetail, runNowTrigger);
 	}
 
 	public void setJobFailed(JobHistoryEntity historyEntity) {
@@ -173,17 +210,78 @@ public class JobManager {
 		historyEntity.setResult(JobRunResult.FAILED);
 		jobService.saveLog(historyEntity);
 
+		logHolder.remove(historyEntity.getId());
+
+		removeFromRunningList(historyEntity);
 		notifyFailedJob(historyEntity);
 	}
 
-	public void setJobSucceed(JobHistoryEntity historyEntity) {
+	public void setJobSucceed(JobHistoryEntity historyEntity,
+			boolean isScheduledJob) {
 		historyEntity.setEndTime(new Timestamp(new Date().getTime()));
 		historyEntity.setResult(JobRunResult.SUCCESS);
 		jobService.saveLog(historyEntity);
+
+		logHolder.remove(historyEntity.getId());
+
+		removeFromRunningList(historyEntity);
+
+		// 检查任务依赖并触发
+		if (isScheduledJob) {
+			Long jobId = historyEntity.getJob().getId();
+
+			for (Long id : dependencyInfoMap.keySet()) {
+				if (dependencyInfoMap.get(id).contains(jobId)) {
+					workingDepMapLock.lock();
+					try {
+						if (workingDepMap.containsKey(id)) {
+							workingDepMap.get(id).add(jobId);
+							Collections.sort(workingDepMap.get(id));
+						} else {
+							workingDepMap.put(id, new ArrayList<Long>());
+							workingDepMap.get(id).add(jobId);
+						}
+
+						if (workingDepMap.get(id).equals(
+								dependencyInfoMap.get(id))) {
+							// 触发一个任务
+							try {
+								resumeJob(id);
+							} catch (SchedulerException e) {
+
+							}
+							workingDepMap.remove(id);
+						}
+					} finally {
+						workingDepMapLock.unlock();
+					}
+				}
+			}
+		}
 	}
 
-	public String getRunningJobLog(Long id) {
-		return null;
+	public LogStatus getRunningJobLog(Long id) {
+		LogStatus log = new LogStatus();
+		boolean running = false;
+		runningJobsLock.lock();
+		try {
+			if (runningJobs.contains(new JobHistoryEntity(id))) {
+				running = true;
+			}
+		} finally {
+			runningJobsLock.unlock();
+		}
+
+		if (!running) {
+			JobHistoryEntity his = jobService.getJobHistory(id);
+			log.setStatus(his.getResult() == JobRunResult.SUCCESS ? "SUCCESS"
+					: "FAILED");
+			log.setLog(his.getContent());
+		} else {
+			log.setStatus("RUNNING");
+			log.setLog(logHolder.get(id));
+		}
+		return log;
 	}
 
 	public void addToRunningList(JobHistoryEntity log) {
@@ -220,6 +318,10 @@ public class JobManager {
 		log.setEndTime(new Timestamp(new Date().getTime()));
 		log.setResult(JobRunResult.FAILED);
 		jobService.saveLog(log);
+	}
+
+	public void refreshLog(Long logId, String log) {
+		this.logHolder.put(logId, log);
 	}
 
 }

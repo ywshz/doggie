@@ -44,7 +44,7 @@ public class TreeController {
         }
 
         for (FileEntity file : files) {
-            result.add(new TreeNode(file.getId(), file.getName(), file.getFileType() == FileType.FOLDER));
+            result.add(new TreeNode(file.getId(), file.getName() + "[" + file.getId() + "]", file.getFileType() == FileType.FOLDER));
         }
 
         return result;

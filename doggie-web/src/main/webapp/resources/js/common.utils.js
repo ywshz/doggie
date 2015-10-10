@@ -43,7 +43,8 @@
             return parseFloat(s.replace(/[^\d\.-]/g, ""));
         },
         formatDate: function (timestamp, pattern) {
-            return (new Date(timestamp)).format(pattern);
+        	if(timestamp==undefined || timestamp==null) return "";
+        	else return (new Date(timestamp)).format(pattern);
         }
     });
 

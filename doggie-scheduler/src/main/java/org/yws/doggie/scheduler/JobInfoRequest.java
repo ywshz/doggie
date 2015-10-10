@@ -2,6 +2,8 @@ package org.yws.doggie.scheduler;
 
 import java.io.Serializable;
 
+import org.yws.doggie.scheduler.models.TriggerType;
+
 public class JobInfoRequest implements Serializable {
 	/**
 	 * 
@@ -12,18 +14,21 @@ public class JobInfoRequest implements Serializable {
 	private String type;
 	private String filePostfix;
 	private String script;
+	private TriggerType triggerType;
 
 	public JobInfoRequest() {
 
 	}
 
-	public JobInfoRequest(Long id, Long historyId, String type,String filePostfix,String script) {
+	public JobInfoRequest(Long id, Long historyId, String type,
+			String filePostfix, String script, TriggerType triggerType) {
 		super();
 		this.id = id;
 		this.historyId = historyId;
 		this.type = type;
-        this.filePostfix=filePostfix;
+		this.filePostfix = filePostfix;
 		this.script = script;
+		this.triggerType = triggerType;
 	}
 
 	public Long getId() {
@@ -58,11 +63,19 @@ public class JobInfoRequest implements Serializable {
 		this.historyId = historyId;
 	}
 
-    public String getFilePostfix() {
-        return filePostfix;
-    }
+	public String getFilePostfix() {
+		return filePostfix;
+	}
 
-    public void setFilePostfix(String filePostfix) {
-        this.filePostfix = filePostfix;
-    }
+	public void setFilePostfix(String filePostfix) {
+		this.filePostfix = filePostfix;
+	}
+
+	public TriggerType getTriggerType() {
+		return triggerType;
+	}
+
+	public void setTriggerType(TriggerType triggerType) {
+		this.triggerType = triggerType;
+	}
 }

@@ -47,11 +47,11 @@
                                 <button type="button" class="btn btn-default" id="open-close-btn">
                                     <span class=" "></span>开启/关闭
                                 </button>
-
+								<!--
 								<button type="button" class="btn btn-default" id="alarm-setting-btn">
                                     <span class=" "></span>告警设置
                                 </button>
-                                
+                                -->
                                 <button type="button" class="btn btn-default" id="delete-btn">
                                     <span class=" "></span>删除
                                 </button>
@@ -252,7 +252,9 @@
 </div>
 
 <input type="hidden" id="viewing-job-input"/>
-
+<form action="${path }/dependency_map.jsp" target="_blank" id="dependency_map_form" method="post">
+    <input type="hidden" name="id" value="" id="dependency_view_job_id">
+</form>
 <%@include file="common/common_foot.jsp" %>
 <script type="text/javascript" src="${path }/resources/js/jquery.ztree.core-3.5.js"></script>
 <script type="text/javascript" src="${path }/resources/js/jquery.ztree.excheck-3.5.min.js"></script>
