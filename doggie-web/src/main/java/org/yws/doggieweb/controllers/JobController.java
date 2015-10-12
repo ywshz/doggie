@@ -1,11 +1,5 @@
 package org.yws.doggieweb.controllers;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -18,20 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.yws.doggieweb.convert.CaseInsensitiveConverter;
-import org.yws.doggieweb.models.AllocationType;
-import org.yws.doggieweb.models.CommonResponse;
-import org.yws.doggieweb.models.DependencyInfoWebBean;
-import org.yws.doggieweb.models.DependencyJobInfoWebBean;
-import org.yws.doggieweb.models.FileType;
-import org.yws.doggieweb.models.JobEntity;
-import org.yws.doggieweb.models.JobHistoryEntity;
-import org.yws.doggieweb.models.JobRunResult;
-import org.yws.doggieweb.models.JobType;
-import org.yws.doggieweb.models.LogStatus;
-import org.yws.doggieweb.models.ScheduleStatus;
-import org.yws.doggieweb.models.ScheduleType;
+import org.yws.doggieweb.models.*;
 import org.yws.doggieweb.service.JobService;
 import org.yws.doggieweb.utils.DateUtils;
+
+import java.util.*;
 
 /**
  * Created by ywszjut on 15/7/25.
@@ -44,6 +29,8 @@ public class JobController {
 
 	@Value("${scheduler.trigger_job.url}")
 	private String scheduler_trigger_job_url;
+	@Value("${scheduler.get_log.url}")
+	private String scheduler_get_log_url;
 	@Value("${scheduler.manual_run_job.url}")
 	private String scheduler_manual_run_job_url;
 	@Value("${scheduler.resume_run_job.url}")
@@ -163,7 +150,7 @@ public class JobController {
 		MultiValueMap<String, Long> params = new LinkedMultiValueMap<String, Long>();
 		params.add("logId", historyId);
 		return restTemplate.postForObject(
-				"http://127.0.0.1:8081/scheduler/get_log", params,
+				scheduler_get_log_url, params,
 				LogStatus.class);
 	}
 

@@ -14,6 +14,7 @@ import java.util.concurrent.BlockingQueue;
 public class WorkingThread implements Runnable {
 	private String workingFolder;
 	private String responseUrl;
+	private String sendLogUrl;
 	private RestTemplate restTemplate = new RestTemplate();
 
 	private final int SUCCESS = 1;
@@ -21,10 +22,11 @@ public class WorkingThread implements Runnable {
 	private final int EXCEPTION = 2;
 	private BlockingQueue<JobInfoRequest> jobQueue;
 
-	public WorkingThread(String workingFolder, String responseUrl,
+	public WorkingThread(String workingFolder, String responseUrl,String sendLogUrl,
 			BlockingQueue<JobInfoRequest> jobQueue) {
 		this.workingFolder = workingFolder;
 		this.responseUrl = responseUrl;
+		this.sendLogUrl=sendLogUrl;
 		this.jobQueue = jobQueue;
 	}
 
@@ -180,7 +182,7 @@ public class WorkingThread implements Runnable {
 			param.add("logId", historyId);
 			param.add("log", new String(data));
 			restTemplate.postForObject(
-					"http://127.0.0.1:8081/scheduler/send_log", param,
+					sendLogUrl, param,
 					Boolean.class);
 		}
 

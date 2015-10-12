@@ -1,20 +1,13 @@
 package org.yws.doggie.scheduler.models;
 
+import javax.persistence.*;
 import java.util.Date;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 /**
  * Created by ywszjut on 15/7/25.
  */
 @Entity
-@Table(name = "workers", schema = "", catalog = "cattle")
+@Table(name = "workers")
 public class WorkerEntity {
 	private long id;
 	private String workerUrl;

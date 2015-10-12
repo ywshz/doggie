@@ -45,7 +45,7 @@ public class DistributedJob implements Job {
 		String filePostfix = "";
 		switch (jobType) {
 		case HIVE:
-			cmdPrefix = "hive -f ";
+			cmdPrefix = "hive -f";
 			filePostfix = ".hive";
 			break;
 		case SHELL:
@@ -58,7 +58,7 @@ public class DistributedJob implements Job {
 			}
 			break;
 		case PYTHON:
-			cmdPrefix = "python ";
+			cmdPrefix = "python";
 			filePostfix = ".py";
 			break;
 		}

@@ -24,9 +24,4 @@ public enum AllocationType {
         return null;
     }
 
-    public static void main(String[] args) {
-        System.out.print(AllocationType.valueOf("AUTO"));
-        System.out.print(AllocationType.get(1));
-        System.out.print(AllocationType.get("AUTO"));
-    }
 }

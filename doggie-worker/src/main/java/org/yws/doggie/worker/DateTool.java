@@ -24,8 +24,4 @@ public class DateTool {
         return format.format(calendar.getTime());
     }
 
-    public static void main(String[] args) {
-        String v = new DateTool().add(Calendar.DAY_OF_MONTH, -1).format("yyyy-MM-dd");
-        System.out.println(v);
-    }
 }

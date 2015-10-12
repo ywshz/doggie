@@ -6,15 +6,9 @@ package org.yws.doggie.worker;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.apache.velocity.exception.ParseErrorException;
-import org.apache.velocity.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.MethodInvocationException;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,18 +54,4 @@ public class DateRender {
         return template;
     }
 
-    public static void main(String[] args) throws ParseErrorException, MethodInvocationException,
-            ResourceNotFoundException, IOException {
-        String json = "";
-        FileReader reader = new FileReader("f:/123.txt");
-        BufferedReader br = new BufferedReader(reader);
-        String s1 = null;
-        while ((s1 = br.readLine()) != null) {
-            json += s1 + "\n";
-        }
-        br.close();
-        reader.close();
-
-        System.out.println(DateRender.render(json));
-    }
 }

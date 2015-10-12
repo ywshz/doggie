@@ -10,7 +10,7 @@ import java.sql.Timestamp;
  * Created by ywszjut on 15/7/25.
  */
 @Entity
-@Table(name = "job_history", schema = "", catalog = "cattle")
+@Table(name = "job_history")
 public class JobHistoryEntity {
     private long id;
     @JsonIgnore

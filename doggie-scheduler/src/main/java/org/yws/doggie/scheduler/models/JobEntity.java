@@ -11,7 +11,7 @@ import java.util.List;
  * Created by ywszjut on 15/7/25.
  */
 @Entity
-@Table(name = "job", schema = "", catalog = "cattle")
+@Table(name = "job")
 public class JobEntity {
     private long id;
     private String name;

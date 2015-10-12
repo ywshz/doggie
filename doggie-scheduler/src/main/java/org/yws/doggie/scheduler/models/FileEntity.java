@@ -11,7 +11,7 @@ import java.util.Set;
  * File entity. @author MyEclipse Persistence Tools
  */
 @Entity
-@Table(name = "file", schema = "", catalog = "cattle")
+@Table(name = "file")
 //@JsonIgnoreProperties(value={"files"})
 //@JsonFilter()
 public class FileEntity implements java.io.Serializable {

@@ -23,6 +23,8 @@ public class WorkerManager {
     private String workingFolder;
     @Value("${scheduler.response.url}")
     private String responseUrl;
+    @Value("${scheduler.sendlog.url}")
+    private String sendlogUrl;
 
     @PostConstruct
     private void init() {
@@ -31,7 +33,7 @@ public class WorkerManager {
 
     private void initWorkingThread() {
         for (int i = 0; i < THREAD_COUNT; i++)
-            exec.execute(new WorkingThread(workingFolder,responseUrl,jobQueue));
+            exec.execute(new WorkingThread(workingFolder,responseUrl,sendlogUrl,jobQueue));
     }
 
     public void addJob(JobInfoRequest job) throws InterruptedException {
