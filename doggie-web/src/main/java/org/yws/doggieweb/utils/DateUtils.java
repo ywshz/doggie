@@ -37,12 +37,4 @@ public class DateUtils {
 		return cal.getTime();
 	}
 	
-	public static void main(String[] args) {
-		String s = DateUtils.format(System.currentTimeMillis());
-		System.out.println(s);
-		
-		System.out.println(DateUtils.getNDaysBeginTime(0));
-		System.out.println(DateUtils.getNDaysBeginTime(1));
-		
-	}
 }

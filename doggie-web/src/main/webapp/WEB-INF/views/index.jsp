@@ -17,6 +17,7 @@
 </head>
 <body>
 <%@include file="common/headmenu.jsp" %>
+
 <div class="container-fluid">
     <div class="row">
         <%@include file="common/sidebar.jsp" %>
@@ -251,6 +252,7 @@
     </div>
 </div>
 
+<input type="hidden" id="head_menu_index_input" value="1">
 <input type="hidden" id="viewing-job-input"/>
 <form action="${path }/dependency_map.jsp" target="_blank" id="dependency_map_form" method="post">
     <input type="hidden" name="id" value="" id="dependency_view_job_id">

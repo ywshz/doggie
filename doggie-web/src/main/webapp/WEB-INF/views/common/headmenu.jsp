@@ -13,8 +13,14 @@
 
 		<div id="navbar" class="collapse navbar-collapse">
 			<ul class="nav navbar-nav">
-				<li class="active" id="head_menu_index_1"><a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button"
-					aria-expanded="false">任务管理</a>
+				<!-- 
+				<li class="active" id="head_menu_index_1"><a class="dropdown-toggle" data-toggle="dropdown" href="${path }/123"
+					role="button" aria-expanded="false">任务管理</a>
+				 -->
+				<li class="" id="head_menu_index_1"><a class="" data-toggle="" href="${path }/"
+					role="button" aria-expanded="">任务管理</a>
+				<li class="" id="head_menu_index_2"><a class="" data-toggle="" href="${path }/worker_manage"
+					role="button" aria-expanded="">Worker管理</a>
 			</ul>
 		</div>
 	</div>
