@@ -27,8 +27,10 @@ public class JobEntity {
 
     private FileEntity file;
 
+    @JsonIgnore
     private List<JobEntity> dependencyList = new ArrayList<JobEntity>();
 
+    @JsonIgnore
     private List<JobHistoryEntity> jobHistories;
 
     public JobEntity() {
