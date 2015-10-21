@@ -68,28 +68,47 @@ public class JobManager {
 	}
 
 	private void initMonitorOfJobTimeout() {
-		List<JobHistoryEntity> cpy = Collections.EMPTY_LIST;
-		runningJobsLock.lock();
-		try {
-			cpy = new ArrayList<JobHistoryEntity>(runningJobs.size());
-			Collections.copy(cpy, runningJobs);
-		} finally {
-			runningJobsLock.unlock();
-		}
+		new Thread(new Runnable() {
 
-		// 遍历CPY寻找过期的，然后去数据库比对
-		for (JobHistoryEntity log : cpy) {
-			long start = log.getStartTime().getTime();
-			long cost = System.currentTimeMillis() - start;
-			if (cost - start > 7200000) {
-				// 超过2小时
-				JobHistoryEntity dbLog = jobService.getJobHistory(log.getId());
-				if (dbLog.getEndTime() == null) {
-					killJob(dbLog);
-					notifyFailedJob(dbLog);
+			@Override
+			public void run() {
+				while(true){
+					List<JobHistoryEntity> cpy = Collections.EMPTY_LIST;
+					runningJobsLock.lock();
+					try {
+						cpy = new ArrayList<JobHistoryEntity>(runningJobs.size());
+						Collections.copy(cpy, runningJobs);
+					} finally {
+						runningJobsLock.unlock();
+					}
+
+					// 遍历CPY寻找过期的，然后去数据库比对
+					for (JobHistoryEntity log : cpy) {
+						long start = log.getStartTime().getTime();
+						long cost = System.currentTimeMillis() - start;
+						if (cost - start > 7200000) {
+							// 超过2小时
+							JobHistoryEntity dbLog = jobService.getJobHistory(log
+									.getId());
+							if (dbLog.getEndTime() == null) {
+								killJob(dbLog);
+								notifyFailedJob(dbLog);
+							}
+						}
+					}
+					
+					try {
+						Thread.sleep(60*1000);
+					} catch (InterruptedException e) {
+						
+						mailService.sendMail(new String[] { "wangshu.yang@mopote.com" },
+								"服务异常告警", "超时任务监控功能失效,请注意排查原因");
+						
+						break;
+					}
 				}
 			}
-		}
+		}).start();
 
 	}
 
