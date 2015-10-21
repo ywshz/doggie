@@ -1,5 +1,7 @@
 package org.yws.doggieweb.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -24,6 +26,7 @@ import java.util.*;
 @Controller
 @RequestMapping("/job")
 public class JobController {
+	private Logger logger = LoggerFactory.getLogger(JobController.class);
 	@Autowired
 	private JobService jobService;
 
@@ -57,6 +60,7 @@ public class JobController {
 	@RequestMapping(value = "get_by_file_id")
 	@ResponseBody
 	public JobEntity get_by_file_id(Long fileId) {
+		logger.info("get file by id : {}", fileId);
 		return jobService.getByFileId(fileId);
 	}
 
