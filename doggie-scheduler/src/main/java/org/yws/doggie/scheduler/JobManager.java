@@ -72,39 +72,47 @@ public class JobManager {
 
 			@Override
 			public void run() {
-				while(true){
-					List<JobHistoryEntity> cpy = Collections.EMPTY_LIST;
-					runningJobsLock.lock();
+				while (true) {
 					try {
-						cpy = new ArrayList<JobHistoryEntity>(runningJobs.size());
-						Collections.copy(cpy, runningJobs);
-					} finally {
-						runningJobsLock.unlock();
-					}
 
-					// 遍历CPY寻找过期的，然后去数据库比对
-					for (JobHistoryEntity log : cpy) {
-						long start = log.getStartTime().getTime();
-						long cost = System.currentTimeMillis() - start;
-						if (cost - start > 7200000) {
-							// 超过2小时
-							JobHistoryEntity dbLog = jobService.getJobHistory(log
-									.getId());
-							if (dbLog.getEndTime() == null) {
-								killJob(dbLog);
-								notifyFailedJob(dbLog);
+						List<JobHistoryEntity> cpy = Collections.EMPTY_LIST;
+						runningJobsLock.lock();
+						try {
+							cpy = new ArrayList<JobHistoryEntity>();
+							for (JobHistoryEntity je : runningJobs) {
+								cpy.add(je);
+							}
+							System.out.println(cpy.size());
+						} finally {
+							runningJobsLock.unlock();
+						}
+
+						// 遍历CPY寻找过期的，然后去数据库比对
+						for (JobHistoryEntity log : cpy) {
+							long start = log.getStartTime().getTime();
+							long cost = System.currentTimeMillis() - start;
+							if (cost > 7200000) {
+								// 超过2小时
+								JobHistoryEntity dbLog = jobService
+										.getJobHistory(log.getId());
+								if (dbLog.getEndTime() == null) {
+									killJob(dbLog);
+									notifyFailedJob(dbLog);
+								}
 							}
 						}
-					}
-					
-					try {
-						Thread.sleep(60*1000);
-					} catch (InterruptedException e) {
-						
-						mailService.sendMail(new String[] { "wangshu.yang@mopote.com" },
-								"服务异常告警", "超时任务监控功能失效,请注意排查原因");
-						
-						break;
+
+						Thread.sleep(6 * 1000);
+					} catch (Exception e) {
+						try {
+							mailService.sendMail(
+									new String[] { "wangshu.yang@mopote.com" },
+									"服务异常告警",
+									"超时任务监控功能失效,请注意排查原因," + e.getMessage());
+						} catch (Exception ee) {
+
+						}
+						// break;
 					}
 				}
 			}
