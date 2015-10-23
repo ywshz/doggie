@@ -102,7 +102,7 @@ public class JobManager {
 							}
 						}
 
-						Thread.sleep(6 * 1000);
+						Thread.sleep(60 * 1000);
 					} catch (Exception e) {
 						try {
 							mailService.sendMail(
@@ -179,8 +179,8 @@ public class JobManager {
 		JobDetail jobDetail = newJob(DistributedJob.class).withIdentity(
 				String.valueOf(jobEntity.getId())).build();
 		jobDetail.getJobDataMap().put("JOB_ID", jobEntity.getId());
-		jobDetail.getJobDataMap().put("SCRIPT", jobEntity.getScript());
-		jobDetail.getJobDataMap().put("JOB_TYPE", jobEntity.getJobType());
+//		jobDetail.getJobDataMap().put("SCRIPT", jobEntity.getScript());
+//		jobDetail.getJobDataMap().put("JOB_TYPE", jobEntity.getJobType());
 		jobDetail.getJobDataMap().put("TRIGGER_TYPE", TriggerType.AUTO);
 		return jobDetail;
 	}
@@ -221,8 +221,8 @@ public class JobManager {
 		JobDetail jobDetail = newJob(DistributedJob.class).withIdentity(
 				"manual_job_" + jobId).build();
 		jobDetail.getJobDataMap().put("JOB_ID", jobEntity.getId());
-		jobDetail.getJobDataMap().put("SCRIPT", jobEntity.getScript());
-		jobDetail.getJobDataMap().put("JOB_TYPE", jobEntity.getJobType());
+//		jobDetail.getJobDataMap().put("SCRIPT", jobEntity.getScript());
+//		jobDetail.getJobDataMap().put("JOB_TYPE", jobEntity.getJobType());
 		jobDetail.getJobDataMap().put("TRIGGER_TYPE", TriggerType.MANUAL);
 
 		Trigger runNowTrigger = newTrigger()

@@ -31,16 +31,23 @@ public class DistributedJob implements Job {
 		ApplicationContext appCtx = ApplicationContextUtil
 				.getApplicationContext();
 		WorkerService ws = appCtx.getBean(WorkerService.class);
+		JobService jobService = appCtx.getBean(JobService.class);
+		
 		List<WorkerEntity> workers = ws.findAll();
 		WorkerSelectStrategy workerSelectStrategy = appCtx
 				.getBean(RandomWorkerSelectStrategy.class);
 
 		Long jobId = (Long) context.getJobDetail().getJobDataMap()
 				.get("JOB_ID");
-		String script = (String) context.getJobDetail().getJobDataMap()
-				.get("SCRIPT");
-		JobType jobType = (JobType) context.getJobDetail().getJobDataMap()
-				.get("JOB_TYPE");
+		
+		JobEntity jobEntity = jobService.getByJobId(jobId);
+//		String script = (String) context.getJobDetail().getJobDataMap()
+//				.get("SCRIPT");
+//		JobType jobType = (JobType) context.getJobDetail().getJobDataMap()
+//				.get("JOB_TYPE");
+		String script = jobEntity.getScript();
+		JobType jobType = jobEntity.getJobType();
+		
 		String cmdPrefix = "";
 		String filePostfix = "";
 		switch (jobType) {

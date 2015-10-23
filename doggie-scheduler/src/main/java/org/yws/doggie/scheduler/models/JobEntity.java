@@ -3,6 +3,10 @@ package org.yws.doggie.scheduler.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
