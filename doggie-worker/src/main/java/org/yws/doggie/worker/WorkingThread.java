@@ -123,6 +123,8 @@ public class WorkingThread implements Runnable {
 		final InputStream inputStream = process.getInputStream();
 		final InputStream errorStream = process.getErrorStream();
 
+		final int MAX_LINES = 5000;
+		
 		Thread normal = new Thread() {
 			@Override
 			public void run() {
@@ -137,6 +139,13 @@ public class WorkingThread implements Runnable {
 						if (count++ % 5 == 0) {
 							bw.flush();
 						}
+						
+						if(count>=MAX_LINES){
+							bw.write("任务LOG过长,不再记录.");
+							bw.flush();
+							break;
+						}
+						
 					}
 				} catch (IOException ioE) {
 					ioE.printStackTrace();
@@ -157,6 +166,12 @@ public class WorkingThread implements Runnable {
 						bw.newLine();
 						if (count++ % 5 == 0) {
 							bw.flush();
+						}
+						
+						if(count>=MAX_LINES){
+							bw.write("任务LOG过长,不再记录.");
+							bw.flush();
+							break;
 						}
 					}
 				} catch (IOException ioE) {
