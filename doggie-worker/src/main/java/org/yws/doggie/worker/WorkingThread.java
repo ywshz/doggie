@@ -20,26 +20,19 @@ public class WorkingThread implements Runnable {
 	private final int SUCCESS = 1;
 	private final int FAILED = 0;
 	private final int EXCEPTION = 2;
-	private BlockingQueue<JobInfoRequest> jobQueue;
+	private JobInfoRequest job;
 
-	public WorkingThread(String workingFolder, String responseUrl,String sendLogUrl,
-			BlockingQueue<JobInfoRequest> jobQueue) {
+	public WorkingThread(String workingFolder, String responseUrl,
+			String sendLogUrl, JobInfoRequest job) {
 		this.workingFolder = workingFolder;
 		this.responseUrl = responseUrl;
-		this.sendLogUrl=sendLogUrl;
-		this.jobQueue = jobQueue;
+		this.sendLogUrl = sendLogUrl;
+		this.job = job;
 	}
 
 	@Override
 	public void run() {
-		while (true) {
-			try {
-				JobInfoRequest job = jobQueue.take();
-				doTheJob(job);
-			} catch (InterruptedException e) {
-				continue;
-			}
-		}
+		doTheJob(job);
 	}
 
 	private void doTheJob(JobInfoRequest job) {
@@ -124,7 +117,7 @@ public class WorkingThread implements Runnable {
 		final InputStream errorStream = process.getErrorStream();
 
 		final int MAX_LINES = 5000;
-		
+
 		Thread normal = new Thread() {
 			@Override
 			public void run() {
@@ -139,13 +132,13 @@ public class WorkingThread implements Runnable {
 						if (count++ % 5 == 0) {
 							bw.flush();
 						}
-						
-						if(count>=MAX_LINES){
+
+						if (count >= MAX_LINES) {
 							bw.write("任务LOG过长,不再记录.");
 							bw.flush();
 							break;
 						}
-						
+
 					}
 				} catch (IOException ioE) {
 					ioE.printStackTrace();
@@ -167,8 +160,8 @@ public class WorkingThread implements Runnable {
 						if (count++ % 5 == 0) {
 							bw.flush();
 						}
-						
-						if(count>=MAX_LINES){
+
+						if (count >= MAX_LINES) {
 							bw.write("任务LOG过长,不再记录.");
 							bw.flush();
 							break;
@@ -196,9 +189,7 @@ public class WorkingThread implements Runnable {
 					2);
 			param.add("logId", historyId);
 			param.add("log", new String(data));
-			restTemplate.postForObject(
-					sendLogUrl, param,
-					Boolean.class);
+			restTemplate.postForObject(sendLogUrl, param, Boolean.class);
 		}
 
 		int exitCode = -999;

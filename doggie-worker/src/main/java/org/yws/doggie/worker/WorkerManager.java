@@ -15,52 +15,43 @@ import java.util.concurrent.Executors;
 
 @Component
 public class WorkerManager {
-    private final int THREAD_COUNT = 10;
-    private BlockingQueue<JobInfoRequest> jobQueue = new ArrayBlockingQueue<JobInfoRequest>(20);
-    private final Executor exec = Executors.newFixedThreadPool(THREAD_COUNT);
+	private final int THREAD_COUNT = 10;
+	private final Executor exec = Executors.newFixedThreadPool(THREAD_COUNT);
 
-    @Value("${worker.working_folder}")
-    private String workingFolder;
-    @Value("${scheduler.response.url}")
-    private String responseUrl;
-    @Value("${scheduler.sendlog.url}")
-    private String sendlogUrl;
+	@Value("${worker.working_folder}")
+	private String workingFolder;
+	@Value("${scheduler.response.url}")
+	private String responseUrl;
+	@Value("${scheduler.sendlog.url}")
+	private String sendlogUrl;
 
-    @PostConstruct
-    private void init() {
-        initWorkingThread();
-    }
+	public void addJob(JobInfoRequest job) throws InterruptedException {
+		exec.execute(new WorkingThread(workingFolder, responseUrl, sendlogUrl,
+				job));
+	}
 
-    private void initWorkingThread() {
-        for (int i = 0; i < THREAD_COUNT; i++)
-            exec.execute(new WorkingThread(workingFolder,responseUrl,sendlogUrl,jobQueue));
-    }
-
-    public void addJob(JobInfoRequest job) throws InterruptedException {
-        jobQueue.put(job);
-    }
-
-    public String getRunningJobLog(Long historyId) {
-        File logFile = new File(workingFolder + File.separator + historyId.toString() +File.separator +"job.log");
-        if(!logFile.exists()){
-            return "Log not found!!";
-        }
-        InputStream in = null;
-        try {
-            in = new FileInputStream(logFile);
-            byte[] data = new byte[in.available()];
-            in.read(data);
-            in.close();
-            return new String(data);
-        } catch (Exception e) {
-            return "Reading log error!!";
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                return "Reading log error!!";
-            }
-        }
-    }
+	public String getRunningJobLog(Long historyId) {
+		File logFile = new File(workingFolder + File.separator
+				+ historyId.toString() + File.separator + "job.log");
+		if (!logFile.exists()) {
+			return "Log not found!!";
+		}
+		InputStream in = null;
+		try {
+			in = new FileInputStream(logFile);
+			byte[] data = new byte[in.available()];
+			in.read(data);
+			in.close();
+			return new String(data);
+		} catch (Exception e) {
+			return "Reading log error!!";
+		} finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				return "Reading log error!!";
+			}
+		}
+	}
 
 }
