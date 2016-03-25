@@ -187,7 +187,9 @@ public class JobManager {
 
 	public void removeScheduledJob(Long jobId) throws SchedulerException {
 		scheduler.deleteJob(new JobKey(jobId.toString()));
+		dependencyInfoMap.get(jobId).clear();
 		dependencyInfoMap.remove(jobId);
+		workingDepMap.get(jobId).clear();
 		workingDepMap.remove(jobId);
 		scheduledJobIdsLock.lock();
 		try {
@@ -277,6 +279,7 @@ public class JobManager {
 							} catch (SchedulerException e) {
 
 							}
+							workingDepMap.get(id).clear();
 							workingDepMap.remove(id);
 						}
 					} finally {
